@@ -9,11 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
     - name: Restore dependencies
-      run: dotnet restore devopsproject.sln
+      run: dotnet restore
+
     - name: Build the Project
-      run: dotnet build devopsproject.sln --no-restore
+      run: dotnet build --no-restore
