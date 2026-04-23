@@ -1,21 +1,17 @@
-pipeline {
-agent any
+environment {
+    XAMPP_DIR = "C:\\xampp\\htdocs\\devopsproject"
+}
 
 stages {
-    stage('Deploy to XAMPP') {
+    stage('Deploy') {
         steps {
             script {
-                // This removes the old folder to fix the "Index of" issue
-                bat 'if exist "C:\\xampp\\htdocs\\devopsproject" rd /s /q "C:\\xampp\\htdocs\\devopsproject"'
-                
-                // This creates the folder fresh
-                bat 'mkdir "C:\\xampp\\htdocs\\devopsproject"'
-
-                // This copies everything from your project to XAMPP
-                bat 'xcopy /Y /S /E /I "*" "C:\\xampp\\htdocs\\devopsproject\\"'
-                
-                // This proves the files are there in the Jenkins logs
-                bat 'dir "C:\\xampp\\htdocs\\devopsproject"'
+                bat """
+                @echo off
+                if exist "${XAMPP_DIR}" rd /s /q "${XAMPP_DIR}"
+                mkdir "${XAMPP_DIR}"
+                xcopy /y /s /e /i "*" "${XAMPP_DIR}\\"
+                """
             }
         }
     }
@@ -23,6 +19,6 @@ stages {
 
 post {
     success {
-        echo "SUCCESS: Check http://localhost/devopsproject"
+        echo "Deployment successful: http://localhost/devopsproject"
     }
 }
