@@ -55,7 +55,7 @@ pipeline {
         success {
             echo "SUCCESS: Your Burger Site is updated everywhere!"
             echo "View via Docker: http://localhost:5000"
-            echo "View via XAMPP: http://localhost/spicy-burger"
+            echo "View via XAMPP: http://localhost/devopsproject"
         }
         failure {
             echo "FAILURE: The deployment failed. Check the 'Console Output' in Jenkins."
