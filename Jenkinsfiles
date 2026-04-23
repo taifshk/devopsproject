@@ -1,41 +1,28 @@
 pipeline {
-    agent any
+agent any
 
-    stages {
-        stage('Docker Build & Deploy') {
-            steps {
-                script {
-                    // Build image from the current root
-                    sh "docker build -t devops-burger-app ."
-                    
-                    // Cleanup old container
-                    sh "docker rm -f devops-burger-container || true"
-                    
-                    // Run container on Port 5000
-                    sh "docker run -d -p 5000:5000 --name devops-burger-container devops-burger-app"
-                }
-            }
-        }
+stages {
+    stage('Deploy to XAMPP') {
+        steps {
+            script {
+                // This removes the old folder to fix the "Index of" issue
+                bat 'if exist "C:\\xampp\\htdocs\\devopsproject" rd /s /q "C:\\xampp\\htdocs\\devopsproject"'
+                
+                // This creates the folder fresh
+                bat 'mkdir "C:\\xampp\\htdocs\\devopsproject"'
 
-        stage('XAMPP Deployment') {
-            steps {
-                script {
-                    // Since files are in the root (A-2), we copy *.* from root
-                    // We exclude the .git folder and the Jenkinsfile itself to keep it clean
-                    bat """
-                    if not exist "C:\\xampp\\htdocs\\devopsproject" mkdir "C:\\xampp\\htdocs\\devopsproject"
-                    xcopy /y /s /i "*.*" "C:\\xampp\\htdocs\\devopsproject"
-                    """
-                }
+                // This copies everything from your project to XAMPP
+                bat 'xcopy /Y /S /E /I "*" "C:\\xampp\\htdocs\\devopsproject\\"'
+                
+                // This proves the files are there in the Jenkins logs
+                bat 'dir "C:\\xampp\\htdocs\\devopsproject"'
             }
         }
     }
+}
 
-    post {
-        success {
-            echo "Deployment Successful!"
-            echo "Docker: http://localhost:5000"
-            echo "XAMPP: http://localhost/devopsproject"
-        }
+post {
+    success {
+        echo "SUCCESS: Check http://localhost/devopsproject"
     }
 }
