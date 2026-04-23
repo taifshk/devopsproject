@@ -1,24 +1,32 @@
-environment {
-    XAMPP_DIR = "C:\\xampp\\htdocs\\devopsproject"
-}
+pipeline {
+    agent any
 
-stages {
-    stage('Deploy') {
-        steps {
-            script {
-                bat """
-                @echo off
-                if exist "${XAMPP_DIR}" rd /s /q "${XAMPP_DIR}"
-                mkdir "${XAMPP_DIR}"
-                xcopy /y /s /e /i "*" "${XAMPP_DIR}\\"
-                """
+    stages {
+        stage('Clone') {
+            steps {
+                echo 'Cloning repository...'
+               git branch: 'main', url: 'https://github.com/SurajHippargi77/Restaurant_menu_website.git'
             }
         }
-    }
-}
 
-post {
-    success {
-        echo "Deployment successful: http://localhost/devopsproject"
+        stage('Build') {
+            steps {
+                echo 'No build needed for HTML project'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Checking if index.html exists'
+                bat 'if exist index.html (echo File exists) else (exit 1)'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying all files to XAMPP htdocs'
+                bat 'xcopy * C:\\xampp\\htdocs\\ /E /H /C /I /Y'
+            }
+        }
     }
 }
