@@ -1,36 +1,18 @@
 pipeline {
     agent any
 
-    environment {
-        // Docker Configuration
-        DOCKER_IMAGE = "spicy-burger-app"
-        DOCKER_TAG = "${env.BUILD_ID}"
-        
-        // XAMPP Configuration (Adjust this path if your XAMPP is on a different drive)
-        XAMPP_HTDOCS = "C:/xampp/htdocs/spicy-burger"
-    }
-
     stages {
-        stage('Checkout') {
-            steps {
-                // Pulls the latest code from your GitHub repository
-                checkout scm
-            }
-        }
-
-        stage('Docker Deployment') {
+        stage('Docker Build & Deploy') {
             steps {
                 script {
-                    echo "--- STARTING DOCKER BUILD & DEPLOY ---"
-                    // 1. Build the image from your Dockerfile
-                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    // Build image from the current root
+                    sh "docker build -t devops-burger-app ."
                     
-                    // 2. Kill the old container if it exists so there is no port conflict
-                    sh "docker rm -f spicy-burger-container || true"
+                    // Cleanup old container
+                    sh "docker rm -f devops-burger-container || true"
                     
-                    // 3. Run the new container on Port 5000
-                    sh "docker run -d -p 5000:5000 --name spicy-burger-container ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                    echo "Docker container is live on Port 5000"
+                    // Run container on Port 5000
+                    sh "docker run -d -p 5000:5000 --name devops-burger-container devops-burger-app"
                 }
             }
         }
@@ -38,14 +20,12 @@ pipeline {
         stage('XAMPP Deployment') {
             steps {
                 script {
-                    echo "--- STARTING XAMPP DEPLOY ---"
-                    // Use 'bat' for Windows commands to copy files to htdocs
-                    // This creates the folder if missing and copies all frontend files
+                    // Since files are in the root (A-2), we copy *.* from root
+                    // We exclude the .git folder and the Jenkinsfile itself to keep it clean
                     bat """
-                    if not exist "${XAMPP_HTDOCS}" mkdir "${XAMPP_HTDOCS}"
-                    xcopy /s /y "frontend\\*" "${XAMPP_HTDOCS}"
+                    if not exist "C:\\xampp\\htdocs\\devopsproject" mkdir "C:\\xampp\\htdocs\\devopsproject"
+                    xcopy /y /s /i "*.*" "C:\\xampp\\htdocs\\devopsproject"
                     """
-                    echo "Files copied to XAMPP htdocs"
                 }
             }
         }
@@ -53,12 +33,9 @@ pipeline {
 
     post {
         success {
-            echo "SUCCESS: Your Burger Site is updated everywhere!"
-            echo "View via Docker: http://localhost:5000"
-            echo "View via XAMPP: http://localhost/devopsproject"
-        }
-        failure {
-            echo "FAILURE: The deployment failed. Check the 'Console Output' in Jenkins."
+            echo "Deployment Successful!"
+            echo "Docker: http://localhost:5000"
+            echo "XAMPP: http://localhost/devopsproject"
         }
     }
 }
